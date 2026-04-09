@@ -75,3 +75,15 @@ ipcMain.handle('save-as', async (event, text) => {
     fs.writeFileSync(result.filePath, text, 'utf-8');
     return { success: true, filePath: result.filePath };
 });
+
+// NEW: New note handler
+ipcMain.handle('new-note', async () => {
+    const result = await dialog.showMessageBox({
+        type: 'warning',
+        buttons: ['Discard Changes', 'Cancel'],
+        defaultId: 1,
+        title: 'Unsaved Changes',
+        message: 'You have unsaved changes. Start a new note any way?'
+        });
+    return { confirmed: result.response === 0 };
+});

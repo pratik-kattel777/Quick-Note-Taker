@@ -54,6 +54,26 @@ window.addEventListener('DOMContentLoaded', async () => {
       } else {
         statusEl.textContent = 'Save As cancelled';
       } 
-    });    
+    });  
+
+
+    const newNoteBtn = document.getElementById('new-note');
+    newNoteBtn.addEventListener('click', async () => {
+        if(textarea.value === lastSavedText){
+            textarea.value = '';
+            lastSavedText = '';
+            statusEl.textContent = 'New note started';
+            return;
+        }
+        const result = await window.electronAPI.newNote();
+        if(result.confirmed){
+            textarea.value = '';
+            lastSavedText = '';
+            statusEl.textContent = 'New note started';
+        }
+        else{
+            statusEl.textContent = 'New note cancelled';
+        }
+    });
 });
 
