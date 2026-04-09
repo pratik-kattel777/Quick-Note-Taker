@@ -62,19 +62,7 @@ ipcMain.handle('save-as', async (event, text) => {
     }
     return { success: false };
 });
-
-// NEW: Save AS handler
-ipcMain.handle('save-as', async (event, text) => {
-    const result = await dialog.showSaveDialog({
-        defultPath: 'my note.txt',
-        filters: [{ name: 'Text Files', extensions: ['txt'] }]
-    });
-    if (result.canceled) {
-        return { success: false };
-    }
-    fs.writeFileSync(result.filePath, text, 'utf-8');
-    return { success: true, filePath: result.filePath };
-});
+// (duplicate incorrect save-as handler removed)
 
 // NEW: New note handler
 ipcMain.handle('new-note', async () => {
@@ -86,4 +74,23 @@ ipcMain.handle('new-note', async () => {
         message: 'You have unsaved changes. Start a new note any way?'
         });
     return { confirmed: result.response === 0 };
+});
+// NEW: Open file handler
+ipcMain.handle('open-file', async (event) => {
+    const result = await dialog.showOpenDialog({
+        title: 'openFile',
+        filters: [{ name: 'Text Files', extensions: ['txt'] }]
+    });
+    if (result.canceled) {
+        return { success: false };
+    }
+    const filePath = result.filePaths[0];
+    const content = fs.readFileSync(filePath, 'utf-8');
+    return { success: true, content, filePath };
+});
+//UPDATED: Smart Save Handeler
+ipcMain.handle('smart-save', async (event, text, currentFilePath) => {
+    const targetPath = currentFilePath || path.join(app.getPath('documents'), 'quicknote.txt');
+    fs.writeFileSync(targetPath, text, 'utf-8');
+    return { success: true, filePath: targetPath };
 });

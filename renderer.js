@@ -8,6 +8,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const savedNote = await window.electronAPI.loadNote();
     textarea.value = savedNote;
     let lastSavedText = textarea.value; // track last saved state
+    let currentFilePath = null;
 
     async function autoSave() {
         const currentText = textarea.value;
@@ -75,5 +76,32 @@ window.addEventListener('DOMContentLoaded', async () => {
             statusEl.textContent = 'New note cancelled';
         }
     });
+    const openFileBtn = document.getElementById('open-file');
+
+
+    openFileBtn.addEventListener('click', async () => {
+        const result = await window.electronAPI.openFile();
+        if (result.success) {
+            textarea.value = result.content;
+            lastSavedText = result.content;
+            currentFilePath = result.filePath;
+            statusEl.textContent = `Opened file: ${result.filePath}`;
+        } else {
+            statusEl.textContent = 'Open file cancelled';
+        }
+    });
+    saveBtn.addEventListener('click', async () => {
+        try {
+            const result = await window.electronAPI.smartSave(textarea.value, currentFilePath);
+            lastSavedText = textarea.value; // Update last saved state
+            currentFilePath = result.filePath;
+            statusEl.textContent = `Saved to: ${result.filePath}`;
+        } catch (err) {
+        console.error('Save failed:', err);
+        statusEl.textContent = 'Save failed';
+    }
+    });
 });
 
+
+// NEW: Save AS handler
