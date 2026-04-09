@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 // Disabling hardware acceleration can help with rendering issues on some systems
 app.disableHardwareAcceleration();
 
@@ -47,6 +47,20 @@ ipcMain.handle('load-note', async () => {
         return fs.readFileSync(filePath, 'utf-8');
     }
     return '';
+});
+
+// Saves the note to a user-selected file
+ipcMain.handle('save-as', async (event, text) => {
+    const result = await dialog.showSaveDialog({
+        title: 'Save Note As',
+        defaultPath: 'note.txt',
+        filters: [{ name: 'Text Files', extensions: ['txt'] }]
+    });
+    if (!result.canceled) {
+        fs.writeFileSync(result.filePath, text, 'utf-8');
+        return { success: true, filePath: result.filePath };
+    }
+    return { success: false };
 });
 
 // NEW: Save AS handler
