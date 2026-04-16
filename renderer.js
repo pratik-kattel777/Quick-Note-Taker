@@ -1,3 +1,26 @@
+// Global error forwarding (temporary) — forwards renderer errors to main so they appear in the terminal
+window.addEventListener('error', (e) => {
+    const err = {
+        message: e.message,
+        filename: e.filename,
+        lineno: e.lineno,
+        colno: e.colno,
+        stack: e.error && e.error.stack
+    };
+    try {
+        if (window.electronAPI && window.electronAPI.logError) window.electronAPI.logError(err);
+    } catch (ignore) {}
+    console.error('Window error forwarded:', err);
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+    const err = { reason: (e.reason && (e.reason.stack || e.reason.message)) || String(e.reason) };
+    try {
+        if (window.electronAPI && window.electronAPI.logError) window.electronAPI.logError(err);
+    } catch (ignore) {}
+    console.error('Unhandled rejection forwarded:', err);
+});
+
 window.addEventListener('DOMContentLoaded', async () => {
 
     const textarea = document.getElementById('note');
@@ -101,7 +124,22 @@ window.addEventListener('DOMContentLoaded', async () => {
         statusEl.textContent = 'Save failed';
     }
     });
+
+    // Wire up application menu actions (use button references available in this scope)
+    if (window.electronAPI && window.electronAPI.onMenuAction) {
+        window.electronAPI.onMenuAction('menu-new-note', async () => {
+            newNoteBtn.click();
+        });
+        window.electronAPI.onMenuAction('menu-open-file', async () => {
+            openFileBtn.click();
+        });
+        window.electronAPI.onMenuAction('menu-save', async () => {
+            saveBtn.click();
+        });
+        window.electronAPI.onMenuAction('menu-save-as', async () => {
+            saveAsBtn.click();
+        });
+    }
 });
 
 
-// NEW: Save AS handler

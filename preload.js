@@ -6,5 +6,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     saveAs: (text) => ipcRenderer.invoke('save-as', text),
     newNote: () => ipcRenderer.invoke('new-note'),
     openFile: () => ipcRenderer.invoke('open-file'),
-    smartSave: (text, currentFilePath) => ipcRenderer.invoke('smart-save', text, currentFilePath)
+    smartSave: (text, currentFilePath) => ipcRenderer.invoke('smart-save', text, currentFilePath),
+    onMenuAction: (channel, callback) => ipcRenderer.on(channel, callback),
+    // Temporary: forward renderer errors to main so they appear in the terminal for debugging
+    logError: (err) => ipcRenderer.invoke('renderer-error', err)
 });
