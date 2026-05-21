@@ -194,3 +194,29 @@ ipcMain.handle('save-note-json', async (event, note) => {
     writeAllNotes(notes);
     return { success: true };
 });
+//NEW: path for the setting JSON file
+const settingsFilePath = path.join(app.getPath('userData'), 'settings.json');
+//NEW: Read settings from file
+function readSettings() {
+    if (!fs.existsSync(settingsFilePath)) {
+        return {fontSize: 16};
+    }
+    const raw = fs.readFileSync(settingsFilePath, 'utf-8');
+    return JSON.parse(raw);
+}
+
+//NEW: write settings to file
+function writeSettings(settings) {
+    fs.writeFileSync(settingsFilePath, JSON.stringify(settings), 'utf-8');
+}
+//NEW: get settings handler
+ipcMain.handle('get-settings', async () => {
+    return readSettings();
+});
+//NEW: save settings handler
+ipcMain.handle('save-settings', async (event, settings) => {
+    const current = readSettings();
+    const updated = { ...current, ...settings };
+    writeSettings(updated);
+    return { success: true };
+});

@@ -27,21 +27,162 @@
             border: none;
             cursor: pointer;
         }
+     * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: system-ui;
+    background: #f4f4f4;
+    height: 100vh;
+  }
+
+  #app {
+    display: flex;
+    height: 100vh;
+  }
+
+  #sidebar {
+    width: 220px;
+    background: #2b2b2b;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  #note-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  #editor {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    gap: 10px;
+  }
+
+  #note-title {
+    font-size: 18px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+
+  textarea {
+    flex: 1;
+    font-size: 16px;
+    padding: 12px;
+    resize: none;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+
+  #toolbar {
+    display: flex;
+    gap: 8px;
+  }
+
+  button {
+    padding: 8px 12px;
+    font-size: 14px;
+    background: #316357;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+
+  button:hover {
+    background: #3d7a6b;
+  }
+
+  #new-note {
+    width: 100%;
+    margin-bottom: 6px;
+  }
+
+  .note-item {
+    background: #3a3a3a;
+    border-radius: 6px;
+    padding: 8px;
+    cursor: pointer;
+  }
+
+  .note-item:hover {
+    background: #4a4a4a;
+  }
+
+  .note-item.active {
+    background: #316357;
+  }
+
+  .note-item-title {
+    font-size: 13px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .note-item-date {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 3px;
+  }
+
+  .note-item-delete {
+    background: transparent;
+    color: #ff6b6b;
+    border: none;
+    font-size: 12px;
+    float: right;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  #save_status {
+    font-size: 13px;
+    color: gray;
+  }
+  #word-count {
+    font-size: 12px;
+    color: #999;
+  }
+
     </style>
 </head>
 
 <body>
-    <h1>📝 Quick Note Taker</h1>
-<textarea id="note" placeholder="Start typing your note..."></textarea>
-
-    <br><br>
-    
-    <button id="new-note">🆕 New Note</button>
-    <button id="open-file">📂 Open File</button>
-    <button id="save">💾 Save Note</button>
-    <button id="save-as">&#128193; Save As</button>
-    <div id="status" style="margin-top: 10px; color: #666; font-size: 0.9em; "></div>
-
+    <div id="app">
+        <!--sidebar-->
+        <div id="sidebar">
+            <button id="new-note">🆕New Note</button>
+            <div id="notes-list"></div>
+        </div>
+        <!--editor-->
+        <div id="editor">
+            <input type="text" id="note-title" placeholder="Note Title...">
+            <textarea id="note" placeholder="Start typing your note..."></textarea>
+            <div id="toolbar">
+                <button id="save">💾Save</button>
+                <button id="save-as">&#128193;Save As</button>
+                <button id="open-file">📂Open File</button>
+                <button id="font-increase">A+</button>
+                <button id="font-decrease">A-</button>
+            </div>
+            <p id="save_status"></p>
+            <p id="word-count">Word Count: 0 | Character Count: 0</p>
+        </div>
+    </div>
     <script src="renderer.js"></script>
 </body>
 
