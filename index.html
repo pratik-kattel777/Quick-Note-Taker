@@ -27,22 +27,34 @@
             border: none;
             cursor: pointer;
         }
+        *{box-sizing: border-box; margin: 0; padding: 0;}
+        body
     </style>
 </head>
 
 <body>
-    <h1>📝 Quick Note Taker</h1>
-<textarea id="note" placeholder="Start typing your note..."></textarea>
+    <div id = "app">
+    <!--sidebar-->
+    <div id = "sidebar">
+        <button id="new-note">🆕New Note</button>
+        <div id = "notes-list"></div>
+    </div>
 
-    <br><br>
-    
-    <button id="new-note">🆕 New Note</button>
-    <button id="open-file">📂 Open File</button>
-    <button id="save">💾 Save Note</button>
-    <button id="save-as">&#128193; Save As</button>
-    <div id="status" style="margin-top: 10px; color: #666; font-size: 0.9em; "></div>
+     <!-- Editor -->
+     <div id = "editor">
+         <input type="text" id="note-title" placeholder="Note Title">
+         <textarea id="note-content" placeholder="Start typing your note..."></textarea>
+         <div id=" toolbar">
+            <button id="new-note">🆕 New Note</button>
+            <button id="open-file">📂 Open File</button>
+            <button id="save">💾 Save Note</button>
+            <button id="save-as">&#128193; Save As</button>
+        </div>
+        <p id="save_status"></p>
+     </div>
+ </div>
+ <script src="renderer.js"></script>
 
-    <script src="renderer.js"></script>
 </body>
 
 </html>

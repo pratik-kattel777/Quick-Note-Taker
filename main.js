@@ -7,6 +7,45 @@ app.disableHardwareAcceleration();
 
 // notes file path (use correct key 'userData')
 const notesFilePath = path.join(app.getPath('userData'), 'notes.json');
+//NEW: Helper - read all notes from the JSON file
+function readAllNotes() {
+    if (!fs.existsSync(notesFilePath)) {
+        return [];
+    }
+    const raw = fs.readFileSync(notesFilePath, 'utf-8');
+    return JSON.parse(raw);
+}
+//NEW: Helper - write all notes to the JSON file
+function writeAllNotes(notes) {
+    fs.writeFileSync(notesFilePath, JSON.stringify(notes), 'utf-8');
+}
+//NEW: Get all notes 
+ipcMain.handle('get-all-notes', async () => {
+    return readAllNotes();
+});
+
+//NEW: delete a note
+ipcMain.handle('delete-note', async (event, id) => {
+    const notes = readAllNotes();
+    const filteredNotes = notes.filter(note => note.id !== id);
+    writeAllNotes(filteredNotes);
+    return { success: true };
+});
+//NEW: save a note 
+ipcMain.handle('save-note-json', async (event, note) => {
+    const notes = readAllNotes();
+    const index = notes.findIndex(n=>n.id === note.id);
+    const now = new Date().toISOString();
+    if(index === -1){
+        //note doesn't exist yet, create new
+        notes.push({ ...note, createdAt: now, updatedAt: now });
+    } else {
+        //note exists, update it
+        notes[index] = { ...notes[index], ...note, updatedAt: now };
+    }
+    writeAllNotes(notes);
+    return { success: true };
+});
 
 // tray reference (created when app is ready)
 let tray = null;
@@ -154,43 +193,4 @@ ipcMain.handle('renderer-error', async (event, err) => {
     console.error('Renderer reported error:', err);
     return { received: true };
 });
-// NEW: System tray is created in the main whenReady initializer above
-//NEW: Helper - read all notes from the JSON file
-function readAllNotes() {
-    if (!fs.existsSync(notesFilePath)) {
-        return [];
-    }
-    const raw = fs.readFileSync(notesFilePath, 'utf-8');
-    return JSON.parse(raw);
-}
-//NEW: Helper - write all notes to the JSON file
-function writeAllNotes(notes) {
-    fs.writeFileSync(notesFilePath, JSON.stringify(notes), 'utf-8');
-}
-//NEW: Get all notes 
-ipcMain.handle('get-all-notes', async () => {
-    return readAllNotes();
-});
-
-//NEW: delete a note
-ipcMain.handle('delete-note', async (event, id) => {
-    const notes = readAllNotes();
-    const filteredNotes = notes.filter(note => note.id !== id);
-    writeAllNotes(filteredNotes);
-    return { success: true };
-});
-//NEW: save a note 
-ipcMain.handle('save-note-json', async (event, note) => {
-    const notes = readAllNotes();
-    const index = notes.findIndex(n=>n.id === note.id);
-    const now = new Date().toISOString();
-    if(index === -1){
-        //note doesn't exist yet, create new
-        notes.push({ ...note, createdAt: now, updatedAt: now });
-    } else {
-        //note exists, update it
-        notes[index] = { ...notes[index], ...note, updatedAt: now };
-    }
-    writeAllNotes(notes);
-    return { success: true };
-});
+// 
