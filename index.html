@@ -6,23 +6,64 @@
     <title>Quick Note Taker</title>
 
     <style>
-        body {
+      :root {
+    --bg-primary: #f4f4f4;
+    --bg-sidebar: #b2b2bb;
+    --bg-editor: #ffffff;
+    --bg-note-item: #3a3a3a;
+    --bg-note-item-hover: #4a4a4a;
+    --bg-note-item-active: #316357;
+
+    --text-primary: #000000;
+    --text-sidebar: #ffffff;
+    --text-muted: #999999;
+
+    --border-color: #cccccc;
+
+    --button-bg: #316357;
+    --button-hover: #3d7a6b;
+}
+
+body.dark-mode {
+    --bg-primary: #1e1e1e;
+    --bg-sidebar: #141414;
+    --bg-editor: #252525;
+    --bg-note-item: #2a2a2a;
+    --bg-note-item-hover: #333333;
+    --bg-note-item-active: #316357;
+
+    --text-primary: #f0f0f0;
+    --text-sidebar: #dddddd;
+    --text-muted: #777777;
+
+    --border-color: #444444;
+
+    --button-bg: #316357;
+    --button-hover: #3d7a6b;
+}
+  body {
             font-family: system-ui;
             padding: 20px;
-            background: #f4f4f4;
+            background: var(--bg-primary);
+            height: 100vh;
         }
 
         textarea {
+            flex: 1;
             width: 95%;
             height: 60vh;
-            font-size: 18px;
-            padding: 15px;
+            font-size: 16px;
+            padding: 12px;
+            resize: none;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
         }
 
         button {
             padding: 12px 30px;
-            font-size: 18px;
-            background: #316357;
+            font-size: 16px;
+            background: var(--button-bg);
             color: white;
             border: none;
             cursor: pointer;
@@ -35,7 +76,7 @@
 
   body {
     font-family: system-ui;
-    background: #f4f4f4;
+    background: var(--bg-primary);
     height: 100vh;
   }
 
@@ -46,8 +87,8 @@
 
   #sidebar {
     width: 220px;
-    background: #2b2b2b;
-    color: white;
+    background: var(--bg-sidebar);
+    color: var(--text-sidebar);
     display: flex;
     flex-direction: column;
     padding: 10px;
@@ -63,6 +104,7 @@
   }
 
   #editor {
+    background: var(--bg-editor);
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -73,8 +115,9 @@
   #note-title {
     font-size: 18px;
     padding: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
+    color: var(--text-primary);
   }
 
   textarea {
@@ -94,7 +137,7 @@
   button {
     padding: 8px 12px;
     font-size: 14px;
-    background: #316357;
+    background: var(--button-bg);
     color: white;
     border: none;
     cursor: pointer;
@@ -102,7 +145,7 @@
   }
 
   button:hover {
-    background: #3d7a6b;
+    background: var(--button-hover);
   }
 
   #new-note {
@@ -111,18 +154,18 @@
   }
 
   .note-item {
-    background: #3a3a3a;
+    background: var(--bg-note-item);
     border-radius: 6px;
     padding: 8px;
     cursor: pointer;
   }
 
   .note-item:hover {
-    background: #4a4a4a;
+    background: var(--bg-note-item-hover);
   }
 
   .note-item.active {
-    background: #316357;
+    background: var(--bg-note-item-active);
   }
 
   .note-item-title {
@@ -135,7 +178,7 @@
 
   .note-item-date {
     font-size: 11px;
-    color: #aaa;
+    color: var(--text-muted);
     margin-top: 3px;
   }
 
@@ -151,11 +194,19 @@
 
   #save_status {
     font-size: 13px;
-    color: gray;
+    color: var(--text-muted);
   }
   #word-count {
     font-size: 12px;
-    color: #999;
+    color: var(--text-muted);
+  }
+#search {
+    padding: 7px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+    width: 100%;
   }
 
     </style>
@@ -166,6 +217,7 @@
         <!--sidebar-->
         <div id="sidebar">
             <button id="new-note">🆕New Note</button>
+            <input type="text" id="search" placeholder="Search notes..."> <!-- Search bar for filtering notes -->
             <div id="notes-list"></div>
         </div>
         <!--editor-->
@@ -178,6 +230,7 @@
                 <button id="open-file">📂Open File</button>
                 <button id="font-increase">A+</button>
                 <button id="font-decrease">A-</button>
+                <button id="dark-mode-toggle">🌙 Dark Mode</button>
             </div>
             <p id="save_status"></p>
             <p id="word-count">Word Count: 0 | Character Count: 0</p>
