@@ -209,6 +209,41 @@ body.dark-mode {
     width: 100%;
   }
 
+  #favorite-btn,
+  #favorites-filter {
+    padding: 8px 16px;
+    background-color: var(--button-bg);
+    color: var(--text-sidebar);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  #favorite-btn:hover,
+  #favorites-filter:hover {
+    background-color: var(--button-hover);
+  }
+
+  #favorite-btn.favorited {
+    background-color: #ff9800;
+    font-weight: bold;
+  }
+
+  #favorite-btn.favorited:hover {
+    background-color: #f57c00;
+  }
+
+  #favorites-filter.active {
+    background-color: #ff9800;
+    font-weight: bold;
+  }
+
+  .note-item-content {
+    flex: 1;
+    overflow: hidden;
+  }
     </style>
 </head>
 
@@ -225,12 +260,14 @@ body.dark-mode {
             <input type="text" id="note-title" placeholder="Note Title...">
             <textarea id="note" placeholder="Start typing your note..."></textarea>
             <div id="toolbar">
-                <button id="save">💾Save</button>
-                <button id="save-as">&#128193;Save As</button>
-                <button id="open-file">📂Open File</button>
+                <button id="save">Save</button>
+                <button id="save-as">Save As</button>
+                <button id="open-file">Open File</button>
                 <button id="font-increase">A+</button>
                 <button id="font-decrease">A-</button>
                 <button id="dark-mode-toggle">🌙 Dark Mode</button>
+                <button id="favorite-btn">☆ Favorite</button>
+                <button id="favorites-filter">☆ All Notes</button>
             </div>
             <p id="save_status"></p>
             <p id="word-count">Word Count: 0 | Character Count: 0</p>

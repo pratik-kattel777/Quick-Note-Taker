@@ -35,6 +35,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   const darkModeBtn = document.getElementById('dark-mode-toggle');
   const wordCountEl = document.getElementById('word-count');
   const searchInput = document.getElementById('search');
+  const favoriteBtn = document.getElementById('favorite-btn');
+  const favoritesFilterBtn = document.getElementById('favorites-filter');
 
   // State
   let notes = [];
@@ -44,10 +46,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   let currentFontSize = 16;
   let isDarkMode = false;
   let filterValue = '';
+  let showOnlyFavorites = false;
 
   // ===== HELPER FUNCTIONS =====
 
-  // ✅ Show native notification (FIXED)
   function showNotification(title, options = {}) {
     if (Notification.permission === 'granted') {
       new Notification(title, {
@@ -57,7 +59,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ✅ Request notification permission on startup
   async function requestNotificationPermission() {
     if (Notification.permission === 'default') {
       try {
@@ -69,23 +70,77 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // ✅ Toggle favorite for current note
+  async function toggleFavorite() {
+    if (!currentNoteId) return;
+
+    const note = notes.find(n => n.id === currentNoteId);
+    if (!note) return;
+
+    note.isFavorite = !note.isFavorite;
+    await window.electronAPI.saveNoteJson(note);
+
+    const status = note.isFavorite ? 'added to' : 'removed from';
+    showNotification('Favorite Updated', { body: `Note ${status} favorites` });
+    
+    updateFavoriteButton();
+    renderNoteList();
+  }
+
+  // ✅ Update favorite button appearance
+  function updateFavoriteButton() {
+    if (!favoriteBtn) return;
+
+    const note = notes.find(n => n.id === currentNoteId);
+    if (note && note.isFavorite) {
+      favoriteBtn.textContent = '⭐ Favorited';
+      favoriteBtn.classList.add('favorited');
+    } else {
+      favoriteBtn.textContent = '☆ Favorite';
+      favoriteBtn.classList.remove('favorited');
+    }
+  }
+
   function renderNoteList() {
     noteList.innerHTML = '';
-    // Use the filterValue state variable
-    const filtered = filterValue.trim() === ''
-      ? notes
-      : notes.filter(n =>
-          (n.title || '').toLowerCase().includes(filterValue.toLowerCase()) ||
-          (n.content || '').toLowerCase().includes(filterValue.toLowerCase())
-        );
+    
+    // Filter by search and favorites
+    let filtered = notes;
+
+    if (showOnlyFavorites) {
+      filtered = filtered.filter(n => n.isFavorite);
+    }
+
+    if (filterValue.trim() !== '') {
+      filtered = filtered.filter(n =>
+        (n.title || '').toLowerCase().includes(filterValue.toLowerCase()) ||
+        (n.content || '').toLowerCase().includes(filterValue.toLowerCase())
+      );
+    }
+
+    // Sort: favorites first, then by date
+    filtered.sort((a, b) => {
+      if (a.isFavorite !== b.isFavorite) {
+        return b.isFavorite ? 1 : -1;
+      }
+      return new Date(b.updatedAt) - new Date(a.updatedAt);
+    });
+
+    if (filtered.length === 0) {
+      noteList.innerHTML = '<div style="padding: 20px; color: #999; text-align: center;">No notes found</div>';
+      return;
+    }
 
     filtered.forEach(note => {
       const item = document.createElement('div');
       item.className = 'note-item' + (note.id === currentNoteId ? ' active' : '');
+      const star = note.isFavorite ? '⭐' : '☆';
       item.innerHTML = `
         <button class="note-item-delete" data-id="${note.id}">×</button>
-        <div class="note-item-title">${note.title || 'Untitled'}</div>
-        <div class="note-item-date">${new Date(note.updatedAt).toLocaleDateString()}</div>
+        <div class="note-item-content">
+          <div class="note-item-title">${star} ${note.title || 'Untitled'}</div>
+          <div class="note-item-date">${new Date(note.updatedAt).toLocaleDateString()}</div>
+        </div>
       `;
 
       item.addEventListener('click', async (e) => {
@@ -118,7 +173,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     statusEl.textContent = '';
     updateWordCount();
     renderNoteList();
-    // ✅ Show notification when note is opened
+    updateFavoriteButton();
     showNotification('Note Opened', { body: note.title || 'Untitled' });
   }
 
@@ -145,7 +200,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     renderNoteList();
     statusEl.textContent = `Saved at ${new Date().toLocaleTimeString()}`;
-    // ✅ Show notification when note is saved
     showNotification('Note Saved', { body: `"${note.title}" has been saved` });
   }
 
@@ -163,10 +217,10 @@ window.addEventListener('DOMContentLoaded', async () => {
       textarea.value = '';
       lastSavedContent = '';
       statusEl.textContent = 'Note deleted.';
+      updateFavoriteButton();
     }
 
     renderNoteList();
-    // ✅ Show notification when note is deleted
     showNotification('Note Deleted', { body: `"${deletedNote?.title || 'Note'}" has been deleted` });
   }
 
@@ -229,6 +283,28 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // ✅ Favorite button
+  if (favoriteBtn) {
+    favoriteBtn.addEventListener('click', async () => {
+      await toggleFavorite();
+    });
+  }
+
+  // ✅ Favorites filter button
+  if (favoritesFilterBtn) {
+    favoritesFilterBtn.addEventListener('click', () => {
+      showOnlyFavorites = !showOnlyFavorites;
+      if (showOnlyFavorites) {
+        favoritesFilterBtn.classList.add('active');
+        favoritesFilterBtn.textContent = '⭐ Favorites (ON)';
+      } else {
+        favoritesFilterBtn.classList.remove('active');
+        favoritesFilterBtn.textContent = '☆ All Notes';
+      }
+      renderNoteList();
+    });
+  }
+
   // New note button
   newNoteBtn.addEventListener('click', async () => {
     if (textarea.value !== lastSavedContent) {
@@ -240,6 +316,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       id: Date.now().toString(),
       title: 'Untitled',
       content: '',
+      isFavorite: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -251,12 +328,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     textarea.value = '';
     lastSavedContent = '';
     renderNoteList();
+    updateFavoriteButton();
     titleInput.focus();
     statusEl.textContent = 'New note created.';
     showNotification('New Note Created', { body: 'Ready to write!' });
   });
 
-  // ✅ FIXED: Save button - only ONE listener
+  // Save button
   saveBtn.addEventListener('click', async () => {
     await saveCurrentNote();
   });
@@ -324,7 +402,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // ===== STARTUP =====
 
-  // ✅ Request notification permission on startup
   await requestNotificationPermission();
   showNotification('Quick Note Taker', { body: 'App started successfully!' });
 
